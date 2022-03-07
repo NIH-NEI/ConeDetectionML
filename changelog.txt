@@ -1,3 +1,8 @@
+#### Version 1.1.0 (2022-03-07) ####
+- Fixed bug with dragging marker outside of the image.
+- Brightness/Contrast changes can be undone with the “Undo” button.
+- Minimal distance between markers is tied to the Annotation Size.
+
 #### Version 1.1.0 (2022-02-15) ####
 - Added "About" box and Help->Keyboard Shortcuts menu commands.
 - Added "Move" and "Erase Multiple" mouse modes.
