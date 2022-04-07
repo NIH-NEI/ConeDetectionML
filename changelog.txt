@@ -1,3 +1,14 @@
+#### Version 1.1.1 (2022-04-07) ####
+- Added "Settings" tool button (shortcut: F7). It opens a dialog to change display settings -
+  visibility, colors and sizes of annotations (markers, Voronoi diagram), and image pixel interpolation for scaling.
+- Added "Snapshot..." menu (under "View") and tool button (shortcut: F5). It opens a preview dialog
+  displaying current image with annotations. Display settings are inherited from the main picture,
+  but you can adjust them using the "Settings" button. These changes do not affect the main image display.
+  Once you are done with the display settings, select the desired output image size/scale, then click the "Save" button.
+  You will be asked for a .png file name to save the snapshot to.
+- Added paper citation to About and Help windows, as well as to README.md.
+- Hyperlinks in About box. 
+
 #### Version 1.1.0 (2022-03-14) ####
 - Added "Voronoi" button in the toolbar to toggle Voronoi Diagram display.
 - Added "Restore Defaults" button to the Detection Settings dialog.

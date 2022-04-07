@@ -3,7 +3,20 @@
 
 *Jianfei Liu (NEI/NIH), Andrei Volkov (NEI/NIH Contractor), and Johnny Tam (NEI/NIH), with research support from the Intramural Research Program of the National Institutes of Health.*
 
-<img src="assets/app_main.png" width="563" height="360" />
+### BibTeX
+
+	@ARTICLE{9339889,
+		author={Liu, Jianfei and Shen, Christine and Aguilera, Nancy and Cukras, Catherine and Hufnagel, Robert B. and Zein, Wadih M. and Liu, Tao and Tam, Johnny},
+		journal={IEEE Transactions on Medical Imaging},
+		title={Active Cell Appearance Model Induced Generative Adversarial Networks for Annotation-Efficient Cell Segmentation and Identification on Adaptive Optics Retinal Images},
+		year={2021},
+		volume={40},
+		number={10},
+		pages={2820-2831},
+		doi={10.1109/TMI.2021.3055483}
+	}
+	
+<img src="assets/app_main.png" width="612" height="360" />
 
 ---------------
 

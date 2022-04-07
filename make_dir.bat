@@ -1,1 +1,1 @@
-pyinstaller --clean --noconfirm --onedir build-dir.spec
+pyinstaller --clean --noconfirm build-dir.spec

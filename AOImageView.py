@@ -6,7 +6,7 @@ from collections import namedtuple
 import vtk
 from vtk.util import numpy_support
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 import numpy as np
 import math
 from scipy.spatial import Voronoi
@@ -614,14 +614,15 @@ class MouseAnnotationInteractor(vtk.vtkInteractorStyleImage):
     #
 
 class ao_visualization(object):
-    def __init__(self, vtk_widget, mouse_mode):
+    def __init__(self, vtk_widget, auto_tolerance=False):
         self._vtk_widget = vtk_widget
         self._draw_image()
+        self.auto_tolerance = auto_tolerance
 
-        self._voronoi = False
         self._interactive_contour_width = 3
         self._voronoi_contour_width = 1.5
-        self._annotation_size = 12
+        self._glyph_size = 6
+        self._gs = 1. if self.auto_tolerance else 0.5
         self._draw_annotations()
         self._draw_interactive_contours()
         self._draw_voronoi_contours()
@@ -648,7 +649,12 @@ class ao_visualization(object):
 
         iren.Initialize()
         iren.Start()
-
+        
+        self._visibility = True
+        self._glyph_visibility = True
+        self._interpolation = True
+        self._voronoi = False
+    #
     def _draw_image(self):
         self._image_data = vtk.vtkImageData()
         self._image_data.SetDimensions(1, 1, 1)
@@ -669,7 +675,7 @@ class ao_visualization(object):
 
         self._annotated_glyph_source = vtk.vtkGlyphSource2D()
         self._annotated_glyph_source.SetGlyphTypeToCross()
-        self._annotated_glyph_source.SetScale(self._annotation_size)
+        self._annotated_glyph_source.SetScale(self._glyph_size*self._gs)
 
         self._annotated_glyph = vtk.vtkGlyph3D()
         self._annotated_glyph.SetSourceConnection(self._annotated_glyph_source.GetOutputPort())
@@ -746,27 +752,7 @@ class ao_visualization(object):
         if camera_flag:
             self._change_camera_orientation()
         self._vtk_widget.GetRenderWindow().Render()
-        
-    def reset_color(self):
-        self._image_actor.GetProperty().SetColorLevel(127.5)
-        self._image_actor.GetProperty().SetColorWindow(255.)
-        self._vtk_widget.GetRenderWindow().Render()
-        
-    @property
-    def color_info(self):
-        p = self._image_actor.GetProperty()
-        return (p.GetColorLevel(), p.GetColorWindow())
-    @color_info.setter
-    def color_info(self, v):
-        try:
-            cval, cwin = v
-        except Exception:
-            cval = 127.5
-            cwin = 255.
-        self._image_actor.GetProperty().SetColorLevel(cval)
-        self._image_actor.GetProperty().SetColorWindow(cwin)
-        self._vtk_widget.GetRenderWindow().Render()
-
+    #  
     def set_mouse_mode(self, mouse_mode):
         self._style.set_mouse_mode(mouse_mode)
 
@@ -788,7 +774,8 @@ class ao_visualization(object):
 
         self._image_data.Initialize()
         self._convert_nparray_to_vtk_image(itk_img, self._image_data)
-        #self._style.tolerance = 6*(itk_img.GetSpacing()[0]+itk_img.GetSpacing()[1])
+        if self.auto_tolerance:
+            self._style.tolerance = 6*(itk_img.GetSpacing()[0]+itk_img.GetSpacing()[1])
         self._image_data.Modified()
         self._style._undo_stack.clear()
         
@@ -817,22 +804,121 @@ class ao_visualization(object):
 
     def set_image_name(self, img_name):
         self._style.set_image_name(img_name)
-
+    #
     @property
-    def annotation_pts_visibility(self):
-        return self._annotated_actor.GetVisibility()
-    @annotation_pts_visibility.setter
-    def annotation_pts_visibility(self, state):
-        self._annotated_actor.SetVisibility(state)
-
-    def set_annotation_pts_size(self, size):
-        self._annotation_size = size
-        self._annotated_glyph_source.SetScale(self._annotation_size)
-        tol = self._annotation_size * 0.5
-        if tol < 0.25: tol = 0.25
-        if tol > 3.: tol = 3.
-        self._style.tolerance = tol
-
+    def glyph_visibility(self):
+        return self._glyph_visibility
+    @glyph_visibility.setter
+    def glyph_visibility(self, st):
+        self._glyph_visibility = st
+        self._annotated_actor.SetVisibility(self._glyph_visibility and self._visibility)
+    #
+    @property
+    def glyph_size(self):
+        return self._glyph_size
+    @glyph_size.setter
+    def glyph_size(self, sz):
+        self._glyph_size = sz
+        self._annotated_glyph_source.SetScale(self._glyph_size*self._gs)
+        if not self.auto_tolerance:
+            tol = self._glyph_size * self._gs
+            if tol < 0.25: tol = 0.25
+            if tol > 3.: tol = 3.
+            self._style.tolerance = tol
+    #
+    @property
+    def glyph_color(self):
+        r, g, b = self._annotated_actor.GetProperty().GetColor()
+        c = QtGui.QColor(int(r*255.), int(g*255.), int(b*255.))
+        return c.name()
+    @glyph_color.setter
+    def glyph_color(self, v):
+        c = QtGui.QColor(v)
+        if c.isValid():
+            self._annotated_actor.GetProperty().SetColor(c.red()/255., c.green()/255., c.blue()/255.)
+    #
+    @property
+    def voronoi(self):
+        return self._voronoi
+    #
+    @voronoi.setter
+    def voronoi(self, flag):
+        self._voronoi = flag
+        self.update_voronoi_segments()
+    #
+    @property
+    def voronoi_width(self):
+        return self._voronoi_contour_width
+    @voronoi_width.setter
+    def voronoi_width(self, sz):
+        self._voronoi_contour_width = sz
+        self._voronoi_contour_actor.GetProperty().SetLineWidth(self._voronoi_contour_width)
+    #
+    @property
+    def voronoi_color(self):
+        r, g, b = self._voronoi_contour_actor.GetProperty().GetColor()
+        c = QtGui.QColor(int(r*255.), int(g*255.), int(b*255.))
+        return c.name()
+    @voronoi_color.setter
+    def voronoi_color(self, v):
+        c = QtGui.QColor(v)
+        if c.isValid():
+            self._voronoi_contour_actor.GetProperty().SetColor(c.red()/255., c.green()/255., c.blue()/255.)
+    #
+    @property
+    def interpolation(self):
+        return self._interpolation
+    @interpolation.setter
+    def interpolation(self, st):
+        self._interpolation = bool(st)
+        if self._interpolation:
+            self._image_actor.InterpolateOn()
+        else:
+            self._image_actor.InterpolateOff()
+    #
+    DISPLAY_ATTRIBUTES = ('glyph_visibility', 'glyph_size', 'glyph_color',
+            'voronoi', 'voronoi_width', 'voronoi_color', 'interpolation',)
+    @property
+    def displaySettings(self):
+        return dict([(a, getattr(self,a)) for a in self.DISPLAY_ATTRIBUTES])
+    @displaySettings.setter
+    def displaySettings(self, o):
+        try:
+            for a, v in o.items():
+                setattr(self, a, v)
+        except Exception:
+            pass
+    #
+    @property
+    def visibility(self):
+        return self._visibility
+    @visibility.setter
+    def visibility(self, st):
+        self._visibility = st
+        self._annotated_actor.SetVisibility(self._glyph_visibility and self._visibility)
+        self.update_voronoi_segments()
+        self.reset_view()
+    #
+    def reset_color(self):
+        self._image_actor.GetProperty().SetColorLevel(127.5)
+        self._image_actor.GetProperty().SetColorWindow(255.)
+        self._vtk_widget.GetRenderWindow().Render()
+    #
+    @property
+    def color_info(self):
+        p = self._image_actor.GetProperty()
+        return (p.GetColorLevel(), p.GetColorWindow())
+    @color_info.setter
+    def color_info(self, v):
+        try:
+            cval, cwin = v
+        except Exception:
+            cval = 127.5
+            cwin = 255.
+        self._image_actor.GetProperty().SetColorLevel(cval)
+        self._image_actor.GetProperty().SetColorWindow(cwin)
+        self._vtk_widget.GetRenderWindow().Render()
+    #
     def set_interactive_contour(self, pts=None):
         self._interactive_contour_points.Initialize()
         self._interactive_contour_lines.Initialize()
@@ -851,8 +937,6 @@ class ao_visualization(object):
     def set_voronoi_contours(self, contour_pts):
         self._voronoi_contour_points.Initialize()
         self._voronoi_contour_lines.Initialize()
-        img_origin = self._image_data.GetOrigin()
-        img_spacing = self._image_data.GetSpacing()
 
         for i, pts in enumerate(contour_pts):
             if len(pts) == 0:
@@ -870,18 +954,9 @@ class ao_visualization(object):
         self._voronoi_contour_poly.Modified()
         self.reset_view()
     #
-    @property
-    def voronoi(self):
-        return self._voronoi
-    #
-    @voronoi.setter
-    def voronoi(self, flag):
-        self._voronoi = flag
-        self.update_voronoi_segments()
-    #
     def update_voronoi_segments(self):
         _vor_contours = []
-        if self.voronoi and len(self._style._annotations) >= 3:
+        if self._visibility and self.voronoi and len(self._style._annotations) >= 3:
             clip = SegmentClipper(self.get_image_dimensions())
             annos = [[p[0], p[1]] for p in self._style._annotations] + clip.bnd_points()
             vor = Voronoi(np.array(annos))
