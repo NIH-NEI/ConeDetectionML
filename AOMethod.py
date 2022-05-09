@@ -36,12 +36,6 @@ scanning_resolution = {
 # scanning_img_rows = 333
 # scanning_img_cols = 333
 
-try:
-    import sys
-    MODEL_WEIGHTS_BASE = sys._MEIPASS
-except AttributeError:
-    MODEL_WEIGHTS_BASE = None
-
 # def display_images(*images):
 #     num_of_imgs = len(images)
 #     f, axarr = plt.subplots(1, num_of_imgs)
@@ -49,9 +43,9 @@ except AttributeError:
 #         axarr[0][i].imshow(images[i], cmap='gray')
 #     plt.show()
 
-def display_images(image):
-    plt.imshow(image, cmap='gray')
-    plt.show()
+# def display_images(image):
+#     plt.imshow(image, cmap='gray')
+#     plt.show()
 
 
 class ao_method():
@@ -66,32 +60,6 @@ class ao_method():
         model = UNet(input_shape=(training_size[0], training_size[1], 1), output_class=output_class)
         model.summary()
         return model
-
-    def create_detection_models(self, model_weight_dir):
-        cwd = os.getcwd()
-        try:
-            if not MODEL_WEIGHTS_BASE is None:
-                os.chdir(MODEL_WEIGHTS_BASE)
-
-            # extract a list of model weights to create detection models
-            model_files = os.listdir(model_weight_dir)
-            model_dictionary = {}
-            if len(model_files) == 0:
-                return model_dictionary #return an empty dictionary, no detection model available
-
-            for dirpath, dirnames, filenames in os.walk(model_weight_dir):
-                for filename in [f for f in filenames if f.endswith(".h5")]:
-                    p = Path(os.path.join(dirpath, filename))
-                    model_key, extension = os.path.splitext(p.parts[-1])
-                    if len(p.parts) >= 2:
-                        model_key = '-'.join(list(p.parts[1:-1])+[model_key])
-                    model_val = os.path.join(dirpath, filename)
-                    model_dictionary[model_key] = os.path.abspath(model_val)
-        finally:
-            os.chdir(cwd)
-
-        #print(model_dictionary)
-        return model_dictionary
 
     def create_detection_model(self, model_name, model_weight_path):
         if not os.path.isfile(model_weight_path):

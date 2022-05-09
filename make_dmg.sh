@@ -10,5 +10,5 @@ osascript MacOS/DMGSetup.scpt ConeDetectionML
 hdiutil detach /Volumes/ConeDetectionML
 python MacOS/licenseDMG.py dist/ConeDetectionML-Darwin0.dmg Help/License.txt
 rm dist/ConeDetectionML-1.1.0-Darwin.dmg
-hdiutil convert dist/ConeDetectionML-Darwin0.dmg -format UDZO -o dist/ConeDetectionML-1.1.1-Darwin.dmg
+hdiutil convert dist/ConeDetectionML-Darwin0.dmg -format UDZO -o dist/ConeDetectionML-1.1.2-Darwin.dmg
 rm dist/ConeDetectionML-Darwin0.dmg

@@ -115,8 +115,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._progress_dlg.setMinimumWidth(geom.width()/5)
         self._file_io = AOFileIO.ao_fileIO()
         self._detection = AOMethod.ao_method()
-        self._detection_model_names = self._detection.create_detection_models('model_weights')
-        self._detection_para_dlg.set_detection_weights(self._detection_model_names)
         self._data_loc_dlg = ao_loc_dialog(self)
         self._data_loc_dlg.setMinimumWidth(geom.width()/2)
 
@@ -130,7 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 jobj = json.load(fi)
             if 'displaySettings' in jobj:
                 self._image_view.displaySettings = jobj['displaySettings']
-            self._detection_para_dlg.set_state(jobj['detection_para'])
+            self._detection_para_dlg.state = jobj['detection_para']
             if 'loadDir' in jobj:
                 self.loadDir = QtCore.QDir(jobj['loadDir'])
             if 'saveDir' in jobj:
@@ -150,7 +148,7 @@ class MainWindow(QtWidgets.QMainWindow):
             sdir = None
         try:
             jobj = {
-                'detection_para': self._detection_para_dlg.get_state(),
+                'detection_para': self._detection_para_dlg.state,
                 'displaySettings': self._image_view.displaySettings,
             }
             if not ldir is None:
@@ -187,7 +185,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._file_list = QtWidgets.QListWidget(self)
         self._file_list.currentRowChanged.connect(self._file_list_row_changed)
 
-        vtkWidget = QVTKRenderWindowInteractor(frame)
+        self.vtkFrame = vtkWidget = QVTKRenderWindowInteractor(frame)
         self._image_view = AOImageView.ao_visualization(vtkWidget, auto_tolerance=False)
 
         flist_layout = Qt.QVBoxLayout()
@@ -274,6 +272,12 @@ class MainWindow(QtWidgets.QMainWindow):
                     triggered=self._snap_annotated)
         view_menu.addAction(self.snap_annotated_act)
 
+        self.screen_act = QtWidgets.QAction('Screenshot', self, shortcut='Ctrl+F7',
+                    statusTip='Copy screenshot to clipboard (Ctrl+F7)',
+                    toolTip='Copy screenshot to clipboard (Ctrl+F7)',
+                    triggered=self._screen)
+        view_menu.addAction(self.screen_act)
+
         self.about_act = QtWidgets.QAction('About', self,
                     icon=qt_icon('about'),
                     triggered=self._display_about)
@@ -291,6 +295,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     shortcut='Down', triggered=self.next_image)
         self._prev_image_act = QtWidgets.QAction('PreviousImage', self,
                     shortcut='Up', triggered=self.previous_image)
+    #
+    def _screen(self):
+        orig = self.vtkFrame.mapToGlobal(QtCore.QPoint(0,0))
+        sz = self.vtkFrame.size()
+        rect = QtCore.QRect(orig, sz)
+        pixmap = QtWidgets.QApplication.primaryScreen().grabWindow(0)
+        pixmap = pixmap.copy(rect)
+        #
+        clip = QtWidgets.QApplication.clipboard()
+        clip.setPixmap(pixmap)
+        self._status_bar.showMessage('Viewport copied to clipboard.')
     #
     def _update_listwidget(self, image_paths, newlist=True):
         if len(image_paths) != self._file_list.count():
@@ -451,6 +466,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
 
         self._update_listwidget(self._input_data['image file paths'])
+        self._image_view.image_visibility = True
         self._display_image(0)
         self._cur_img_id = 0
         self._file_list.setCurrentRow(self._cur_img_id)
@@ -601,7 +617,8 @@ class MainWindow(QtWidgets.QMainWindow):
         c_rows = [row for row, ann in enumerate(self._input_data['annotations']) if len(ann) == 0]
         self._detection_para_dlg.SetCheckedRows(c_rows)
         self._detection_para_dlg.SetHighlightedRow(self._cur_img_id)
-        res = self._detection_para_dlg.exec()
+        self._detection_para_dlg.update_builtin_weights()
+        res = self._detection_para_dlg.exec_()
         if res == QtWidgets.QDialog.Rejected:
             return
 
@@ -611,12 +628,14 @@ class MainWindow(QtWidgets.QMainWindow):
             display_error('Input error', 'Nothing was checked.')
             return
         
-        if self._detection_model_names.get(self._detection_para_dlg.get_current_detection_method()) == None \
-            or len(self._input_data['images']) == 0:
-            display_error('Input errors', 'There are either no detection models or input data!')
+        mw = self._detection_para_dlg.model_weights
+        if mw is None:
+            display_error('Input errors', 'Missing Detection Model Weights!')
             return
+        method, weights = mw
+        self._status_bar.showMessage('Using Detection Model Weights from: '+weights)
 
-        window_title = cfg.APP_NAME + ': ' + self._detection_para_dlg.get_current_detection_method()
+        window_title = cfg.APP_NAME + ': ' + method
         self.setWindowTitle(window_title)
 
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
@@ -624,20 +643,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self._progress_dlg.show()
         self._progress_dlg.set_progress(0)
 
-        self._detection.create_detection_model(self._detection_para_dlg.get_current_detection_method(),
-                                               self._detection_model_names[self._detection_para_dlg.get_current_detection_method()])
+        self._detection.create_detection_model(method, weights)
 
         QtWidgets.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
         for i, row in enumerate(c_rows):
             annotations = self._input_data['annotations'][row]
             img = self._input_data['images'][row]
             img_name = self._input_data['image file paths'][row]
-            # res_img = self._detection.detect_cones(img)
-            # plt.imshow(res_img, cmap='gray')
-            # plt.show()
-            detection_pts = self._detection.detect_cones(img, self._detection_para_dlg.get_image_fov(),
-                                                         self._detection_para_dlg.get_probablity_threshold(),
-                                                         self._detection_para_dlg.get_clustering_radius())
+            detection_pts = self._detection.detect_cones(img, self._detection_para_dlg.image_fov,
+                self._detection_para_dlg.probablity_threshold, self._detection_para_dlg.clustering_radius)
 
             annotations.clear()
             for pt in detection_pts:
@@ -745,6 +759,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._cur_img_id >= 0:
             self._input_data['colors'][self._cur_img_id] = self._image_view.color_info
         self._image_view.reset_view(True)
+        self._image_view.image_visibility = True
 
     @property
     def mouse_status(self):
