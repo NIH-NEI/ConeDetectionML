@@ -152,7 +152,7 @@ class ao_parameter_dialog(QtWidgets.QDialog):
         self.save_geom = None
         #
         geom = QtWidgets.QApplication.primaryScreen().geometry()
-        self.resize(geom.width()*36/100, geom.height()*42/100)
+        self.resize(geom.width()*36/100, geom.height()*60/100)
         #
         self._mute = False
         self._builtin_map = {}
