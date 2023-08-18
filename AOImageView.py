@@ -260,6 +260,13 @@ class MouseAnnotationInteractor(vtk.vtkInteractorStyleImage):
 
     def set_image_spacing(self, spacing):
         self._image_spacing = spacing
+        
+    def reset_mouse_state(self):
+        self._mouse_down = False
+        self._ctrl_down = False
+        self._shift_down = False
+        self._alt_down = False
+        self._mouse_scroll = False
 
     @property
     def tolerance(self):
@@ -576,16 +583,16 @@ class MouseAnnotationInteractor(vtk.vtkInteractorStyleImage):
         if key == 'Alt_L':
             self._alt_down = True
             if not self._win: key = 'Control_L'
-        if not self._mouse_in:
-            obj.OnKeyPress()
-            return
         if key == 'Up':
             cfg.main_wnd.previous_image()
             return
         elif key == 'Down':
             cfg.main_wnd.next_image()
             return
-        elif key == 'Shift_L':
+        if not self._mouse_in:
+            obj.OnKeyPress()
+            return
+        if key == 'Shift_L':
             self._shift_down = True
             if not self._mouse_scroll:
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.OpenHandCursor)
@@ -772,6 +779,7 @@ class ao_visualization(object):
     def reset_view(self, camera_flag=False):
         if camera_flag:
             self._change_camera_orientation()
+            self._style.reset_mouse_state()
         self._vtk_widget.GetRenderWindow().Render()
     #  
     def set_mouse_mode(self, mouse_mode):
@@ -790,6 +798,7 @@ class ao_visualization(object):
         vtk_img.GetPointData().SetScalars(v_image)
 
     def set_image(self, itk_img):
+        self._style.reset_mouse_state()
         self._style.set_image_origin(itk_img.GetOrigin())
         self._style.set_image_spacing(itk_img.GetSpacing())
 

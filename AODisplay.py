@@ -50,13 +50,18 @@ class AoColorButton(QtWidgets.QPushButton):
                 self.onchange(self.color)
         #
 
-class ao_display_settings(QtWidgets.QDialog):
+class ao_display_settings(QtWidgets.QWidget):
     changed = QtCore.pyqtSignal([dict])
     def __init__(self, parent=None, contour_settings=True):
         super(ao_display_settings, self).__init__(parent)
         self.contour_settings = contour_settings
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-        self.setSizeGripEnabled(False)
+        
+        flags = self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint
+        flags &= ~QtCore.Qt.WindowContextHelpButtonHint
+        self.setWindowFlags(flags)
+        self.setAutoFillBackground(True)
+        
+        #self.setSizeGripEnabled(False)
         self.setWindowTitle('Display Settings')
         #
         self._mute = True
@@ -165,7 +170,14 @@ class ao_display_settings(QtWidgets.QDialog):
         #
         self.displaySettings = None
         self._mute = False
-        #self.setFixedSize(self.size())
+    #
+    def showEvent(self, evt):
+        super(ao_display_settings, self).showEvent(evt)
+        self.setFixedSize(self.size())
+    #
+    def closeEvent(self, evt):
+        #super(ao_display_settings, self).closeEvent(evt)
+        self.hide()
     #
     def handleChange(self):
         if not self._mute:
