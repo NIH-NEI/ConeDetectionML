@@ -1,5 +1,5 @@
 
-!define VERSION "1.1.3"
+!define VERSION "1.2.0"
 !define PATCH  "1"
 !define INST_DIR "dist\ConeDetectionML"
 
@@ -11,8 +11,8 @@ Var START_MENU
 InstallDir $PROGRAMFILES64\ConeDetectionML
  
 ;define installer name
-Name "Cone Detection (ML) 1.1.3"
-OutFile "dist\ConeDetectionML-1.1.3-win64.exe"
+Name "Cone Detection (ML) 1.2.0"
+OutFile "dist\ConeDetectionML-1.2.0-win64.exe"
 
 ;SetCompressor lzma
 
@@ -66,7 +66,7 @@ Push "DisplayName"
 Push "Cone Detection (ML)"
 Call ConditionalAddToRegisty
 Push "DisplayVersion"
-Push "1.1.3"
+Push "1.2.0"
 Call ConditionalAddToRegisty
 Push "Publisher"
 Push "National Eye Institute"

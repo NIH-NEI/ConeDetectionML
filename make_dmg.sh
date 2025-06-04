@@ -1,5 +1,5 @@
 APPNAME="ConeDetectionML"
-VERSION="1.1.3"
+VERSION="1.2.0"
 rm -rf build/
 rm -rf dist/
 pyinstaller --clean --noconfirm build-app-dir.spec
