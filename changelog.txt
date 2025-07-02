@@ -1,3 +1,6 @@
+#### Version 1.2.0 (2025-07-02) ####
+- Alt+Left Click in Add/Move mouse modes erases markers (instead of Ctrl+Left Click).
+
 #### Version 1.2.0 (2025-05-30) ####
 - Added Brightness/Contrast widget, toggled by F3, to change brightness/contrast in any mouse mode and
 provide visual information about current settings.
@@ -10,7 +13,7 @@ The dialog also has a "Comment" box to add user-defined comments on current edit
 - Added "Export Annotation Stats..." item to the "File" menu. It exports annotation tracker statistics (like
 who and when created/deleted/modified how many annotations).
 - Added possibility to open 3D image stacks. They are marked with a different icon in the list of open files,
-when the user double-clicks on such entry, a list of frames is dispayed, so the user can browse across
+when the user double-clicks on such entry, a list of frames is displayed, so the user can browse across
 separate frames and select ones intended for automatic processing (auto-detection).
 
 #### Version 1.1.3 (2023-08-18) ####
