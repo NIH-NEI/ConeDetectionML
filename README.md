@@ -16,8 +16,6 @@
 		doi={10.1109/TMI.2021.3055483}
 	}
 
-<img src="assets/app_main.png" width="612" height="360" />
-
 ---------------
 
 ## Getting Started
