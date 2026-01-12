@@ -45,7 +45,7 @@ There are two ways to use the software:
 
 6. The **Mark**, **Erase S**, **Erase M** and **Undo** button allows to add, erase single/multiple and undo past operations.
 
-7. The **Settings** tab provides options to display, alter size of and color of the centroids of the cones and Voronoi map.
+7. The **Settings** tab provides options to display and alter size and color of the centroids of the cones and Voronoi map.
 
    <img src="assets/ImageConeDisplaySettings4.png" />
 
