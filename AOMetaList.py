@@ -348,7 +348,7 @@ class MetaTracker(object):
             res.append((mrec, stats[mkey]))
         return res
     #
-            
+
 
 class MetaList(object):
     FWD_LIST_ATTR = ['clear', 'copy', 'count', 'index', 'pop', 'remove', 'reverse', 'sort']
