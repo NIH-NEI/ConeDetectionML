@@ -85,9 +85,9 @@ class ao_progress_dialog(QtWidgets.QDialog):
         self.setLayout(hbox)
 
     def set_progress(self, val):
-        self._progressbar.setValue(val)
+        self._progressbar.setValue(int(val))
         QtWidgets.QApplication.processEvents()
-        
+
 class ao_loc_dialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(ao_loc_dialog, self).__init__(parent)
@@ -113,13 +113,13 @@ class ao_loc_dialog(QtWidgets.QDialog):
         self.local_txt = QtWidgets.QLineEdit('')
         self.local_txt.setReadOnly(True)
         view_layout.addWidget(self.local_txt, 3, 0)
-        
+
         hist_lab = QtWidgets.QLabel('Auto-backup (History) File:')
         view_layout.addWidget(hist_lab, 4, 0)
         self.hist_txt = QtWidgets.QLineEdit('')
         self.hist_txt.setReadOnly(True)
         view_layout.addWidget(self.hist_txt, 5, 0)
-        
+
         self.buttonbox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
         self.buttonbox.accepted.connect(self.accept)
         view_layout.addWidget(self.buttonbox, 6, 0)
@@ -157,7 +157,7 @@ class ao_parameter_dialog(QtWidgets.QDialog):
         self.save_geom = None
         #
         geom = QtWidgets.QApplication.primaryScreen().geometry()
-        self.resize(geom.width()*36/100, geom.height()*60/100)
+        self.resize(geom.width()*36//100, geom.height()*60//100)
         #
         self._mute = False
         self._builtin_map = {}
@@ -180,16 +180,16 @@ class ao_parameter_dialog(QtWidgets.QDialog):
     #
     def _setup_layout(self):
         self.setWindowTitle('Cone detection')
-        
+
         ml_panel = QtWidgets.QGroupBox('Machine Learning Model Weights')
         ml_layout = QtWidgets.QGridLayout()
         ml_panel.setLayout(ml_layout)
         self.rb_builtin = QtWidgets.QRadioButton('Built-in:')
         ml_layout.addWidget(self.rb_builtin, 0, 0)
-        
+
         self.cb_builtin = QtWidgets.QComboBox()
         ml_layout.addWidget(self.cb_builtin, 0, 1, 1, 2)
-        
+
         self.rb_custom = QtWidgets.QRadioButton('Custom:')
         ml_layout.addWidget(self.rb_custom, 1, 0)
         self.txCustomWeights = QtWidgets.QLineEdit()
@@ -222,7 +222,7 @@ class ao_parameter_dialog(QtWidgets.QDialog):
         okBtn.setText('  Detect Checked  ')
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        
+
         self.imageTable = QtWidgets.QTableWidget(0, 2)
         self.imageTable.setColumnWidth(0, 8)
         self.imageTable.setHorizontalHeaderLabels([u'\u221A', u'Image File Name']);
@@ -239,20 +239,20 @@ class ao_parameter_dialog(QtWidgets.QDialog):
         view_layout.setColumnStretch(1, 0)
         view_layout.setColumnStretch(2, 10)
         view_layout.addWidget(self.imageTable, 0, 0, 1, 3)
-        
+
         view_layout.addWidget(ml_panel, 1, 0, 1, 3)
-        
+
         view_layout.addWidget(probability_label, 2, 0)
         view_layout.addWidget(self._probability_threshold_input, 2, 1)
         view_layout.addWidget(clustering_radius_label, 3, 0)
         view_layout.addWidget(self._clustering_radius_input, 3, 1)
         view_layout.addWidget(fov_label, 4, 0)
         view_layout.addWidget(self._fov_input, 4, 1)
-        
+
         self.defBtn = QtWidgets.QPushButton('Restore Defaults')
         view_layout.addWidget(self.defBtn, 5, 0)
         self.defBtn.clicked.connect(self.restoreDefaults)
-        
+
         view_layout.addWidget(self.buttonbox, 6, 0, 1, 3)
         self.setLayout(view_layout)
         #
@@ -515,9 +515,9 @@ class _crossLabel(QtWidgets.QLabel):
         y0 = self.margin
         y1 = self.height() - self.margin
         h = y1 - y0
-        x = (self.posX - self.rangeX[0]) * w / (self.rangeX[1] - self.rangeX[0]) + x0
+        x = (self.posX - self.rangeX[0]) * w // (self.rangeX[1] - self.rangeX[0]) + x0
         qp.drawLine(x, y0, x, y1)
-        y = h - (self.posY - self.rangeY[0]) * h / (self.rangeY[1] - self.rangeY[0]) + y0
+        y = h - (self.posY - self.rangeY[0]) * h // (self.rangeY[1] - self.rangeY[0]) + y0
         qp.drawLine(x0, y, x1, y)
         #
         qp.end()
@@ -546,7 +546,7 @@ class ao_brightness_contrast(QtWidgets.QWidget):
         view_layout.setVerticalSpacing(2)
         self.setLayout(view_layout)
         #
-        for idx, stretch in enumerate((0., 1., 0.)):
+        for idx, stretch in enumerate((0, 1, 0)):
             view_layout.setColumnStretch(idx, stretch)
             view_layout.setRowStretch(idx, stretch)
         #
@@ -629,7 +629,6 @@ class ao_brightness_contrast(QtWidgets.QWidget):
         self.onCrossLabel(x, y)
         self._mute = False
     #
-
 
 class ao_source_window(QtWidgets.QWidget):
     def __init__(self, mainwin):
