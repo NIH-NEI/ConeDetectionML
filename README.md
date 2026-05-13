@@ -128,7 +128,7 @@ If successful, the result is `<prefix>/ConeDetectionML/dist/ConeDetectionML-{ver
 
 3. Follow steps 1 through 5 of *Setting up development environment* to setup the development environment.
 
-4. At the Conda prompt with *ConeDetection* activated, cd to `<prefix>/ConeDetectionML` and type the command:
+4. At the Conda prompt with *AO_Detection* activated, cd to `<prefix>/ConeDetectionML` and type the command:
 
 	`bash make_dmg.sh`
 
