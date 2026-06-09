@@ -47,7 +47,7 @@ There are two ways to use the software:
 
    <img src="assets/ImageConeDetect3.png" />
 
-6. The **Mark**, **Erase S**, **Erase M** and **Undo** buttons allow to add annotations, erase single/multiple annotations and undo past operation.
+6. The **Add**, **Erase S**, **Erase M** and **Undo** buttons allow to add annotations, erase single/multiple annotations and undo past operation.
 
 7. The **Settings** tab provides options to display and alter size and color of the centroids of the cones and Voronoi map.
 
