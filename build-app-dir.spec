@@ -68,7 +68,6 @@ for pkg in (
     "skimage",
     "SimpleITK",
     "vtkmodules",
-    "PyQt5",
 ):
     hiddenimports += safe_extend(collect_submodules, pkg)
     datas += safe_extend(collect_data_files, pkg)
@@ -86,7 +85,6 @@ for dist_name in (
     "scipy",
     "scikit-image",
     "SimpleITK",
-    "PyQt5",
     "vtk",
 ):
     try:
